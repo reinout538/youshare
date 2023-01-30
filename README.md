@@ -1,4 +1,4 @@
-#youshare
+#youshare script for labeling publications as youshare candidates in Pure
 
 #get all person records from Pure and select IDs, affiliations, YouShare-status, earliest start dt, latest end dt
 
@@ -18,4 +18,4 @@
     
 #5) determine if publication is eligible for YouShare
 
-#6) create csv-file for bulk-edit keywords in Pure
+#6) create log as csv-file which can be used as source for bulk-edit keywords in Pure
