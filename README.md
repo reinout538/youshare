@@ -1,4 +1,4 @@
-#youshare script for labeling publications as youshare candidates in Pure
+#YouShare_tool.py is script for labeling publications as youshare candidates in Pure
 
 #get all person records from Pure and select IDs, affiliations, YouShare-status, earliest start dt, latest end dt
 
