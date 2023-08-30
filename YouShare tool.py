@@ -5,10 +5,10 @@
 #2) Open Access-classification Pure (VSNU-keyword)
 #3) YouShare-status Pure (Taverne keyword)
 #4) per author:
-#a) if (earliest) publication year not before earliest appointment year
-#b) if author is YouShare candidate
-#5) determine if publication is eligible for YouShare: 
-
+    #a) if (earliest) publication year not before earliest appointment year
+    #b) if author is YouShare candidate
+#5) determine if publication is eligible for YouShare
+#6) create csv-file for bulk-edit keywords in Pure
 
 import os, sys
 import requests
@@ -21,10 +21,10 @@ from IPython.display import clear_output
 
 api_pure_pub = 'https://research.vu.nl/ws/api/524/research-outputs/'
 api_pure_persons = 'https://research.vu.nl/ws/api/524/persons'
-input ("pure api key" = key_pure)
+key_pure = input('enter pure api-key with admin rights: ')
 
-from_date = "2018-01-01"
-to_date = "9999-12-31"
+from_date = "2010-01-01"
+to_date = "2017-12-31"
 youshare_candidates = []
 gold_oa_statuses = ["/dk/atira/pure/keywords/oa/a_open_article_in_open_journal","/dk/atira/pure/keywords/oa/b_open_article_in_toll_access_journal"]
 youshare_types = ["/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/article", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/letter", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/book", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/editorial", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/systematicreview", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/shortsurvey", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/chapter", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/entry", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/conference", "/dk/atira/pure/researchoutput/researchoutputtypes/memorandum"]
@@ -50,7 +50,7 @@ def get_pure_persons():
 
     #get count
     response = requests.get(api_pure_persons, headers={'Accept': 'application/json'},params={'size': size, 'offset':offset, 'apiKey':key_pure})   
-    print (response.json())
+    #print (response.json())
     no_records = (response.json()['count'])
     cycles = (math.ceil(no_records/size))
     print(f"{no_records} persons found")
@@ -65,13 +65,13 @@ def get_pure_persons():
         #loop through items in response
         for count,item in enumerate(response.json()['items'][0:]):  
             count_scopus=1
-
+            
             youshare_candidate = youshare_opt_out = "false"
             person_scopus_ids = []
             person_affil_list = []
             affil_first_dt = datetime.datetime(9999, 12, 31)
             affil_last_dt = datetime.datetime(1900, 1, 1)
-
+            
             #get affiliations
             for affil in item['staffOrganisationAssociations']:
                     affil_start_dt = datetime.datetime.strptime(affil['period']['startDate'][:10], '%Y-%m-%d')
@@ -104,12 +104,16 @@ def get_pure_persons():
             #get youshare status
             if 'keywordGroups' in item:
                 for keyword_group in item['keywordGroups']:
+                    
                     if keyword_group['logicalName'] == "/dk/atira/pure/keywords/You_Share_Participant":
+                        
                         for keyword in keyword_group['keywordContainers']:
+                            
                             if keyword['structuredKeyword']['uri'] == "/dk/atira/pure/keywords/You_Share_Participant/you_share_opt_out":
                                 youshare_opt_out = "true"
                             else:
                                 youshare_candidate = "true"
+                            
                     
             #int_person_list.append({'person_uuid':item['uuid'],'youshare':youshare_candidate,'scopus_ids':person_scopus_ids,'personaffiliations':person_affil_list, 'affil_first_dt': affil_first_dt, 'affil_last_dt': affil_last_dt})      
             int_person_dict[item['uuid']] = {'person_uuid':item['uuid'],'youshare_candidate':youshare_candidate, 'youshare_opt_out':youshare_opt_out,'scopus_ids':person_scopus_ids,'personaffiliations':person_affil_list, 'affil_first_dt': affil_first_dt, 'affil_last_dt': affil_last_dt}
@@ -138,12 +142,12 @@ def get_pubs():
     offset = 0
     size = 100
     
-    with open(os.path.join(file_dir,"log.csv"), 'w', newline='') as file_log:
+    with open(os.path.join(file_dir,"log.csv"), 'w', newline='', encoding='utf-8') as file_log:
         write_log = csv.writer(file_log, delimiter=',', escapechar=' ', quoting=csv.QUOTE_ALL, lineterminator='\r\n')
-        write_log.writerow(["uuid", "pureId", "publ status", "publ year", "publ date", "current pub status", "current pub dt", "pre-vu", "internal_affil", "oa-status", "youshare_author", "youshare_author_opt_out", "youshare eligible", "youshare status pure"])
+        write_log.writerow(["uuid", "pureId", "publ type", "publ category", "peer-rev", "publ status", "publ year", "publ date", "current pub status", "current pub dt", "doi", "link", "filename", "pre-vu", "internal_affil", "oa-status", "youshare_author", "youshare_author_opt_out", "youshare eligible", "youshare status pure", "youshare_keyw_(new)"])
         
         #get count
-        data = {"workflowSteps" : ["forApproval", "approved"],"typeUris":youshare_types,"publicationStatuses": ["/dk/atira/pure/researchoutput/status/published", "/dk/atira/pure/researchoutput/status/epub"],"publicationCategories":["/dk/atira/pure/researchoutput/category/academic"],"publishedAfterDate":from_date, "publishedBeforeDate":to_date      }
+        data = {"workflowSteps" : ["forApproval", "approved", "forRevalidation"],"typeUris":youshare_types,"publicationStatuses": ["/dk/atira/pure/researchoutput/status/published", "/dk/atira/pure/researchoutput/status/epub"],"publicationCategories":["/dk/atira/pure/researchoutput/category/academic"],"publishedAfterDate":from_date, "publishedBeforeDate":to_date      }
         response = requests.post(api_pure_pub, json=data, headers={'Accept': 'application/json', 'Content-Type': 'application/json'}, params={'apiKey':key_pure})
         json_record = response.json()
         count = json_record['count']
@@ -198,11 +202,11 @@ def get_pubs():
                         #check if pub year before start affiliation
                         if int_person_dict[person_assoc["person"]["uuid"]]["affil_first_dt"].year <= int(pub_year):
                             pre_vu = 'false'
-                            #check author youshare status
-                            if int_person_dict[person_assoc["person"]["uuid"]]["youshare_candidate"] == 'true':
-                                youshare_author = 'true'
-                            if int_person_dict[person_assoc["person"]["uuid"]]["youshare_opt_out"] == 'true':
-                                youshare_author_opt_out = 'true'
+                        #check author youshare status
+                        if int_person_dict[person_assoc["person"]["uuid"]]["youshare_candidate"] == 'true':
+                            youshare_author = 'true'
+                        if int_person_dict[person_assoc["person"]["uuid"]]["youshare_opt_out"] == 'true':
+                            youshare_author_opt_out = 'true'
                                                                
                         #check for internal org
                         if "organisationalUnits" in person_assoc:                           
@@ -216,21 +220,55 @@ def get_pubs():
                             oa_status = keyword_group["keywordContainers"][0]['structuredKeyword']['uri']
                         if keyword_group["logicalName"] == '/dk/atira/pure/keywords/taverne':
                             youshare_status = keyword_group["keywordContainers"][0]['structuredKeyword']['uri']
-                        
+
+                #get electr versions
+                doi = link = file = ""
+                if "electronicVersions" in pub:
+                    for electr_version in pub["electronicVersions"]:
+                        if "doi" in electr_version:
+                            doi = electr_version.get("doi")
+                        if "link" in electr_version:
+                            link = electr_version.get("link")
+                        if "file" in electr_version:
+                            file = electr_version["file"].get("fileName")
+                        else: pass
                 
+                #determine keyw
+                if youshare_status != None:
+                    youshare_keyw = None
+                elif pre_vu == 'true' or internal_affil == 'false' or internal_person == 'false':
+                    youshare_keyw = 'excl_non_vu'
+                elif oa_status in gold_oa_statuses:
+                    youshare_keyw = 'excl_oa'
+                elif youshare_author_opt_out == 'true':
+                    youshare_keyw = 'excl_auth_opt_out'
+                elif youshare_author == 'false':
+                    youshare_keyw = 'excl_no_opt_in'
+                else:
+                    youshare_keyw = 'unknown'
+                    
                 #determine YouShare status
                 if youshare_author == 'true' and youshare_author_opt_out == 'false' and pre_vu == 'false' and internal_affil == 'true' and internal_person == 'true' and oa_status not in gold_oa_statuses and youshare_status == None:
                     youshare = 'true'
                 else:
                     youshare = 'false'
                 
-                write_log.writerow([pub["uuid"], pub["pureId"], pub_stat, pub_year, pub_dt, pub_stat_curr, pub_dt_curr, pre_vu, internal_affil, oa_status, youshare_author, youshare_author_opt_out,youshare, youshare_status])
-                #print(pub["uuid"], pub["pureId"], pub_stat, pub_year, pub_dt, pub_stat_curr, pub_dt_curr, pre_vu, internal_affil, oa_status, youshare_author, youshare, youshare_status)
+                try:
+                    write_log.writerow([pub["uuid"], pub["pureId"],pub["type"]["uri"],pub["category"]["uri"], pub["peerReview"], pub_stat, pub_year, pub_dt, pub_stat_curr, pub_dt_curr, doi, link, file, pre_vu, internal_affil, oa_status, youshare_author, youshare_author_opt_out,youshare, youshare_status, youshare_keyw])
+                except:
+                    print (pub["uuid"])
                 
-                
+
+#main                
 get_pure_persons()
 get_pubs()
+
 #get_youshare_candidates()
     
+with open(os.path.join(file_dir,"person_log.csv"), 'w', newline='') as person_log:
+        write_p_log = csv.writer(person_log, delimiter=',', escapechar=' ', quoting=csv.QUOTE_ALL, lineterminator='\r\n')
+        write_p_log.writerow(['person_uuid','youshare_candidate', 'youshare_opt_out','scopus_ids','personaffiliations', 'affil_first_dt', 'affil_last_dt'])
 
-
+        for person in int_person_dict:
+            write_p_log.writerow([int_person_dict[person]['person_uuid'], int_person_dict[person]['youshare_candidate'], int_person_dict[person]['youshare_opt_out'], int_person_dict[person]['scopus_ids'], int_person_dict[person]['personaffiliations'], int_person_dict[person]['affil_first_dt'], int_person_dict[person]['affil_last_dt']])
+            
