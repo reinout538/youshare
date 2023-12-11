@@ -24,13 +24,13 @@ api_pure_persons = 'https://research.vu.nl/ws/api/524/persons'
 key_pure = input('enter pure api-key with admin rights: ')
 
 from_date = "2010-01-01"
-to_date = "2017-12-31"
+to_date = "2016-12-31"
 youshare_candidates = []
 gold_oa_statuses = ["/dk/atira/pure/keywords/oa/a_open_article_in_open_journal","/dk/atira/pure/keywords/oa/b_open_article_in_toll_access_journal"]
 youshare_types = ["/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/article", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/letter", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/book", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/editorial", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/systematicreview", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/shortsurvey", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/chapter", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/entry", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/conference", "/dk/atira/pure/researchoutput/researchoutputtypes/memorandum"]
 
-file_dir = 'G:/UBVU/Pure/py_tools/youshare/'
-#file_dir = sys.path[0]
+#file_dir = 'G:/UBVU/Pure/py_tools/youshare/'
+file_dir = sys.path[0]
 
 
 def get_pure_persons():
