@@ -1,5 +1,5 @@
 #get all person records from Pure and select IDs, affiliations, YouShare-status, earliest start dt, latest end dt
-#get all publicaties that meet YouShare-criteria - published after a specific date
+#get all publicaties that meet YouShare-criteria - published in a specific period
 #loop through publications and determine:
 #1) if it has at least one internal author and internal organisation affiliation
 #2) Open Access-classification Pure (VSNU-keyword)
@@ -23,8 +23,9 @@ api_pure_pub = 'https://research.vu.nl/ws/api/524/research-outputs/'
 api_pure_persons = 'https://research.vu.nl/ws/api/524/persons'
 key_pure = input('enter pure api-key with admin rights: ')
 
-from_date = "2010-01-01"
-to_date = "2016-12-31"
+from_date = "2023-01-01"
+to_date = "2023-12-31"
+created_after = "1900-10-01"
 youshare_candidates = []
 gold_oa_statuses = ["/dk/atira/pure/keywords/oa/a_open_article_in_open_journal","/dk/atira/pure/keywords/oa/b_open_article_in_toll_access_journal"]
 youshare_types = ["/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/article", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/letter", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/book", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/editorial", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/systematicreview", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontojournal/shortsurvey", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/chapter", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/entry", "/dk/atira/pure/researchoutput/researchoutputtypes/contributiontobookanthology/conference", "/dk/atira/pure/researchoutput/researchoutputtypes/memorandum"]
@@ -120,6 +121,7 @@ def get_pure_persons():
                    
     return (int_person_dict)
 
+"""
 def get_youshare_candidates():
     
     data = {"employmentStatus":"ACTIVE","keywordUris":["/dk/atira/pure/keywords/You_Share_Participant/you_share_participant"]}
@@ -136,7 +138,8 @@ def get_youshare_candidates():
      
     for n, person in enumerate(json_record["items"]):
         youshare_candidates.append(person["uuid"])
-        
+"""
+
 def get_pubs():
     
     offset = 0
@@ -147,7 +150,7 @@ def get_pubs():
         write_log.writerow(["uuid", "pureId", "publ type", "publ category", "peer-rev", "publ status", "publ year", "publ date", "current pub status", "current pub dt", "doi", "link", "filename", "pre-vu", "internal_affil", "oa-status", "youshare_author", "youshare_author_opt_out", "youshare eligible", "youshare status pure", "youshare_keyw_(new)"])
         
         #get count
-        data = {"workflowSteps" : ["forApproval", "approved", "forRevalidation"],"typeUris":youshare_types,"publicationStatuses": ["/dk/atira/pure/researchoutput/status/published", "/dk/atira/pure/researchoutput/status/epub"],"publicationCategories":["/dk/atira/pure/researchoutput/category/academic"],"publishedAfterDate":from_date, "publishedBeforeDate":to_date      }
+        data = {"workflowSteps" : ["forApproval", "approved", "forRevalidation"],"typeUris":youshare_types,"publicationStatuses": ["/dk/atira/pure/researchoutput/status/published", "/dk/atira/pure/researchoutput/status/epub"],"publicationCategories":["/dk/atira/pure/researchoutput/category/academic"],"publishedAfterDate":from_date, "publishedBeforeDate":to_date, "createdAfter": created_after}
         response = requests.post(api_pure_pub, json=data, headers={'Accept': 'application/json', 'Content-Type': 'application/json'}, params={'apiKey':key_pure})
         json_record = response.json()
         count = json_record['count']
@@ -156,7 +159,8 @@ def get_pubs():
         #get publ records
         for request in range (cycles)[0:]:
             
-            data = {"offset":offset,"size":size,"workflowSteps" : ["forApproval", "approved"],"typeUris":youshare_types,"publicationStatuses": ["/dk/atira/pure/researchoutput/status/published", "/dk/atira/pure/researchoutput/status/epub"],"publicationCategories":["/dk/atira/pure/researchoutput/category/academic"],"publishedAfterDate":from_date, "publishedBeforeDate":to_date      }
+            data = {"offset":offset,"size":size,"workflowSteps" : ["forApproval", "approved"],"typeUris":youshare_types,"publicationStatuses": ["/dk/atira/pure/researchoutput/status/published", "/dk/atira/pure/researchoutput/status/epub"],"publicationCategories":["/dk/atira/pure/researchoutput/category/academic"],"publishedAfterDate":from_date, "publishedBeforeDate":to_date, "createdAfter": created_after}
+            
             offset += size       
             response = requests.post(api_pure_pub, json=data, headers={'Accept': 'application/json', 'Content-Type': 'application/json'}, params={'apiKey':key_pure})
             
