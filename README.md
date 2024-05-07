@@ -2,7 +2,7 @@
 
 #get all person records from Pure and select IDs, affiliations, YouShare-status, earliest start dt, latest end dt
 
-#get all publicaties that meet YouShare-criteria - published after a specific date
+#get all publications that meet YouShare-criteria - published after a specific date
 
 #loop through publications and determine:
 
