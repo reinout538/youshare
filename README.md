@@ -25,6 +25,7 @@
     #b) if author is YouShare candidate
     
 #5) determine if publication is eligible for Taverne:
+
     #a)publication has internal author(s) and internal affiliation(s)
     #b)publication is not Gold OA (UNL-cat A or B)
     #c)none of the authors has opted out
