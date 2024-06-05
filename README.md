@@ -25,9 +25,9 @@
     #b) if author is YouShare candidate
     
 #5) determine if publication is eligible for Taverne:
-    #publication has internal author(s) and internal affiliation(s)
-    #publication is not Gold OA (UNL-cat A or B)
-    #none of the authors has opted out
-    #at least one of the authors is 'implied' under Taverne opt-out and was employed at the VU at the time of publication
+    #a)publication has internal author(s) and internal affiliation(s)
+    #b)publication is not Gold OA (UNL-cat A or B)
+    #c)none of the authors has opted out
+    #d)at least one of the authors is 'implied' under Taverne opt-out and was employed at the VU at the time of publication
     
 #6) create csv-file for bulk-edit keywords in Pure (select by columns 'youshare eligible')
