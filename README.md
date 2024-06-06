@@ -22,6 +22,7 @@
 #3) YouShare-status Pure (Taverne keyword)
 
 #4) per author:
+
     #a) if (earliest) publication year not before earliest appointment year
     #b) if author is YouShare candidate
     
